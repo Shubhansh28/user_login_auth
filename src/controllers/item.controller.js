@@ -14,8 +14,12 @@ const validation = ({name,type,place,contact}) => {
 }
 
 const getItem = async(req,res) => {
-    let item = await prisma.item.findMany()
-    res.status(200).json(item)
+    try {
+        const item = await prisma.item.findMany()
+        return res.status(200).json(item)
+    } catch (err) {
+        return res.status(500).json({ message: 'server error' })
+    }
 }
 
 const createItem = async(req, res) => {
@@ -45,4 +49,3 @@ module.exports = {
     getItem,
     createItem
 }
-
