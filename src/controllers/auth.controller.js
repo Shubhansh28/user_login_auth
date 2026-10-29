@@ -65,6 +65,7 @@ const login = async (req, res) => {
             user
         })
     } catch (error) {
+        console.error('[login error]', error)
         if (error.message === 'Invalid credentials') {
             return res.status(401).json({
                 success: false,
