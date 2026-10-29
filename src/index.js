@@ -1,5 +1,6 @@
 const express = require('express');
 const { config } = require("dotenv")
+const cors = require('cors')
 const path = require('path')
 config({
   path: path.join(__dirname, '..', '.env')
@@ -9,6 +10,7 @@ const itemRoutes = require('./routes/itemRoutes')
 const app = express()
 const port = process.env.PORT
 
+app.use(cors())
 app.use(express.json())
 
 app.get('/', (req, res) => {
