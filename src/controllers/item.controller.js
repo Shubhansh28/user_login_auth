@@ -40,7 +40,15 @@ const Rectifier = ({name,type,place,contact}) => {
 
 const getItem = async(req,res) => {
     try {
-        const item = await prisma.item.findMany()
+        const item = await prisma.item.findMany({
+            include: {
+                user: {
+                    select: {
+                        username: true
+                    }
+                }
+            }
+        })
         return res.status(200).json(item)
     } catch (err) {
         return res.status(500).json({ message: 'server error' })
