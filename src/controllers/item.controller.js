@@ -13,6 +13,31 @@ const validation = ({name,type,place,contact}) => {
     )
 }
 
+const patchItemValidation = ({name,type,place,contact}) => {
+    let isValid = true
+    if (name){
+        isValid = isValid && typeof name === 'string' &&  name.trim()!==''
+    }
+    if (type){
+        isValid =  isValid && typeof type === 'string' && type.trim()!==''
+    }
+    if (place){
+        isValid =  isValid && typeof place === 'string' && place.trim()!==''
+    }
+    if (contact){
+        isValid =  isValid && typeof contact === 'string' && contact.trim()!==''
+    }
+    return isValid
+}
+
+const Rectifier = ({name,type,place,contact}) => {
+    name = name?name.trim():undefined
+    type = type?type.trim():undefined
+    place = place?place.trim():undefined
+    contact = contact?contact.trim():undefined
+    return {name,type,place,contact}
+}
+
 const getItem = async(req,res) => {
     try {
         const item = await prisma.item.findMany()
@@ -45,7 +70,38 @@ const createItem = async(req, res) => {
     }
 }
 
+const patchItem = async(req,res) => {
+    const itemId = Number(req.params.itemId)
+    if (!itemId){
+        return res.status(400).json({message: 'invalid itemId'})
+    }
+    const userId = req.user.id
+    let {name,type,place,contact} = req.body
+    if (!patchItemValidation({name,type,place,contact})){
+        return res.status(400).json({message: 'invalid request'})
+    }
+    try{
+        const item = await prisma.item.update({
+            where: {
+                id: itemId,
+                userId: userId
+            },
+            data: Rectifier({name,type,place,contact})
+        })
+        const updatedItem = await prisma.item.findUnique({
+            where: {
+                id: itemId
+            }
+        })
+        return res.status(201).json(updatedItem)
+    }
+    catch (err) {
+        return res.status(500).json({message: "access Denied"})
+    }
+}
+
 module.exports = {
     getItem,
-    createItem
+    createItem,
+    patchItem
 }
