@@ -2,13 +2,27 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET 
 const JWT_EXPIRES_IN = '15m'; 
+const AUTH_COOKIE_NAME = 'auth_token'
 
 const generateToken = (payload) => {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
-};
+}
 
 const verifyToken = (token) => {
   return jwt.verify(token, JWT_SECRET);
 };
 
-module.exports = { generateToken, verifyToken };
+const getAuthCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'none',
+  maxAge: 15 * 60 * 1000,
+  path: '/'
+})
+
+module.exports = {
+  AUTH_COOKIE_NAME,
+  generateToken,
+  verifyToken,
+  getAuthCookieOptions
+};

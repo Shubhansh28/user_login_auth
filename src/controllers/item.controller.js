@@ -14,33 +14,26 @@ const validation = ({name,type,place,contact}) => {
 }
 
 const patchItemValidation = ({name,type,place,contact}) => {
-    let isValid = true
-    if (name){
-        isValid = isValid && typeof name === 'string' &&  name.trim()!==''
-    }
-    if (type){
-        isValid =  isValid && typeof type === 'string' && type.trim()!==''
-    }
-    if (place){
-        isValid =  isValid && typeof place === 'string' && place.trim()!==''
-    }
-    if (contact){
-        isValid =  isValid && typeof contact === 'string' && contact.trim()!==''
-    }
-    return isValid
-}
+    const fields = {name, type, place, contact}
+    let validatedPatch = Object.entries(fields).filter(([,value]) => value !== undefined)
 
-const Rectifier = ({name,type,place,contact}) => {
-    name = name?name.trim():undefined
-    type = type?type.trim():undefined
-    place = place?place.trim():undefined
-    contact = contact?contact.trim():undefined
-    return {name,type,place,contact}
+    if (validatedPatch.length===0){
+        return false
+    }
+
+    const isInValid = validatedPatch.some(([,value])=> typeof value !== 'string' || value.trim()==='')
+    if(isInValid){
+        return false
+    }
+    return Object.fromEntries(validatedPatch.map(([key,value])=>[key,value.trim()]))
 }
 
 const getItem = async(req,res) => {
     try {
         const item = await prisma.item.findMany({
+            where: {
+                status: 'open'
+            },
             include: {
                 user: {
                     select: {
@@ -80,36 +73,104 @@ const createItem = async(req, res) => {
 
 const patchItem = async(req,res) => {
     const itemId = Number(req.params.itemId)
-    if (!itemId){
+    if (!Number.isInteger(itemId) || itemId <= 0){
         return res.status(400).json({message: 'invalid itemId'})
     }
     const userId = req.user.id
     let {name,type,place,contact} = req.body
-    if (!patchItemValidation({name,type,place,contact})){
+    const patchItem = patchItemValidation({name,type,place,contact})
+    if (!patchItem){
         return res.status(400).json({message: 'invalid request'})
     }
     try{
-        const item = await prisma.item.update({
+        const updateResult = await prisma.item.updateMany({
             where: {
                 id: itemId,
                 userId: userId
             },
-            data: Rectifier({name,type,place,contact})
+            data: patchItem
         })
+        if (updateResult.count === 0) {
+            return res.status(404).json({message: 'item not found'})
+        }
         const updatedItem = await prisma.item.findUnique({
             where: {
                 id: itemId
             }
         })
-        return res.status(201).json(updatedItem)
+        return res.status(200).json(updatedItem)
     }
     catch (err) {
-        return res.status(500).json({message: "access Denied"})
+        return res.status(500).json({message: "server error"})
+    }
+}
+
+const updateItemStatus = async (req, res) => {
+    const itemId = Number(req.params.itemId)
+    const { status } = req.body
+
+    if (!Number.isInteger(itemId) || itemId <= 0) {
+        return res.status(400).json({message: 'invalid itemId'})
+    }
+
+    if (status !== 'open' && status !== 'claimed') {
+        return res.status(400).json({message: 'invalid status'})
+    }
+
+    try {
+        const updateResult = await prisma.item.updateMany({
+            where: {
+                id: itemId,
+                userId: req.user.id
+            },
+            data: {
+                status
+            }
+        })
+
+        if (updateResult.count === 0) {
+            return res.status(404).json({message: 'item not found'})
+        }
+
+        const updatedItem = await prisma.item.findUnique({
+            where: {
+                id: itemId
+            }
+        })
+        return res.status(200).json(updatedItem)
+    } catch (err) {
+        return res.status(500).json({message: 'server error'})
+    }
+}
+
+const deleteItem = async (req, res) => {
+    const itemId = Number(req.params.itemId)
+    if (!Number.isInteger(itemId) || itemId <= 0) {
+        return res.status(400).json({message: 'invalid itemId'})
+    }
+
+    try {
+        const deleteResult = await prisma.item.deleteMany({
+            where: {
+                id: itemId,
+                userId: req.user.id
+            }
+        })
+
+        if (deleteResult.count === 0) {
+            return res.status(404).json({message: 'item not found'})
+        }
+
+        return res.status(204).send()
+    } catch (err) {
+        return res.status(500).json({message: 'server error'})
     }
 }
 
 module.exports = {
     getItem,
     createItem,
-    patchItem
+    patchItem,
+    updateItemStatus,
+    deleteItem
 }

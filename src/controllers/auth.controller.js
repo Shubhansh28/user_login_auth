@@ -1,6 +1,10 @@
 const bcrypt = require('bcrypt')
 const userService = require('../services/user.service')
 const authService = require('../services/auth.service')
+const {
+    AUTH_COOKIE_NAME,
+    getAuthCookieOptions
+} = require('../auth/token')
 
 const saltRounds = 10
 
@@ -58,10 +62,11 @@ const login = async (req, res) => {
             password.trim()
         )
 
+        res.cookie(AUTH_COOKIE_NAME, token, getAuthCookieOptions())
+
         return res.status(200).json({
             success: true,
             message: 'Login successful',
-            token,
             user
         })
     } catch (error) {
@@ -79,7 +84,13 @@ const login = async (req, res) => {
     }
 }
 
+const logout = (req, res) => {
+    res.clearCookie(AUTH_COOKIE_NAME, getAuthCookieOptions())
+    return res.status(204).json({messgae: 'logout successful'})
+}
+
 module.exports = {
     signup,
-    login
+    login,
+    logout
 }

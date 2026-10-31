@@ -1,16 +1,7 @@
-const { verifyToken } = require('../auth/token')
+const { AUTH_COOKIE_NAME, verifyToken } = require('../auth/token')
 
 const authenticate = (req, res, next) => {
-    const authHeader = req.headers.authorization
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({
-            success: false,
-            message: 'Access denied.'
-        })
-    }
-
-    const token = authHeader.slice('Bearer '.length).trim()
+    const token = req.cookies?.[AUTH_COOKIE_NAME]
 
     if (!token) {
         return res.status(401).json({
