@@ -15,7 +15,7 @@ const verifyToken = (token) => {
 const getAuthCookieOptions = () => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'none',
+  sameSite: process.env.sameSite,
   maxAge: 15 * 60 * 1000,
   path: '/'
 })

@@ -29,7 +29,7 @@ const signup = async (req, res) => {
     }
 
     try {
-        const existingUser = await userService.findUser(username)
+        const existingUser = await userService.findUserByUsername(username)
         if (existingUser) {
             return res.status(409).json({ message: 'user already exist' })
         }

@@ -1,6 +1,7 @@
 const { AUTH_COOKIE_NAME, verifyToken } = require('../auth/token')
+const { findUserById } = require('../services/user.service')
 
-const authenticate = (req, res, next) => {
+const authenticate = async(req, res, next) => {
     const token = req.cookies?.[AUTH_COOKIE_NAME]
 
     if (!token) {
@@ -12,6 +13,11 @@ const authenticate = (req, res, next) => {
 
     try {
         req.user = verifyToken(token)
+        const user = await findUserById(req.user.id)
+        if (!user){
+            return res.status(404).json({success: false, message: "User does Not exist"})
+        }
+        req.user.role = user.role
         next()
     } catch (error) {
         const message = error.name === 'TokenExpiredError'
@@ -25,6 +31,7 @@ const authenticate = (req, res, next) => {
     }
 }
 
+
 module.exports = {
-    authenticate
+    authenticate,
 }

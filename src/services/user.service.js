@@ -7,7 +7,7 @@ const createUser = async(info) => {
     return user
 }
 
-const findUser = async(data) => {
+const findUserByUsername = async(data) => {
     const user = await prisma.user.findUnique({
         where: {
             username: data
@@ -16,7 +16,28 @@ const findUser = async(data) => {
     return user
 }
 
+const findUserById = async(userId) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId
+        }
+    })
+    return user
+}
+
+const updateUserRole = async(userId,role) => {
+    const updatedUser = await prisma.user.updateMany({
+        where: {
+            id: userId
+        },
+        data: {role}
+    })
+    return updatedUser
+}
+
 module.exports = {
     createUser,
-    findUser
+    findUserByUsername,
+    findUserById,
+    updateUserRole
 }

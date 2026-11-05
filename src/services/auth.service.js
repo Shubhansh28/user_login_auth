@@ -3,7 +3,7 @@ const userService = require('./user.service')
 const { generateToken } = require('../auth/token')
 
 const loginUser = async (username, password) => {
-    const user = await userService.findUser(username)
+    const user = await userService.findUserByUsername(username)
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
         throw new Error('Invalid credentials')

@@ -8,6 +8,8 @@ config({
 });
 const authRoutes = require('./routes/authRoutes')
 const itemRoutes = require('./routes/itemRoutes')
+const adminRoutes = require('./routes/adminRoutes')
+const originAuth = require('./middleware/origin')
 const app = express()
 const port = process.env.PORT
 
@@ -17,11 +19,12 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(cookieParser())
+app.use(originAuth)
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('Welcome to Lost and Found Api')
 })
-
+app.use('/admin',adminRoutes)
 app.use('/', authRoutes)
 app.use('/items',itemRoutes)
 
