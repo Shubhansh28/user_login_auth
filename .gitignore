@@ -20,3 +20,6 @@ build/
 
 # macOS
 .DS_Store
+
+#testing files
+test.js
