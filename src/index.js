@@ -3,11 +3,11 @@ const { config } = require("dotenv")
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const path = require('path')
-const { ipBlockerMiddleware } = require('./middleware/apiGuard')
 
 config({
   path: path.join(__dirname, '..', '.env')
 });
+const { ipBlockerMiddleware } = require('./middleware/apiGuard')
 
 const authRoutes = require('./routes/authRoutes')
 const itemRoutes = require('./routes/itemRoutes')
