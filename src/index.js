@@ -3,9 +3,12 @@ const { config } = require("dotenv")
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const path = require('path')
+const { ipBlockerMiddleware } = require('./middleware/apiGuard')
+
 config({
   path: path.join(__dirname, '..', '.env')
 });
+
 const authRoutes = require('./routes/authRoutes')
 const itemRoutes = require('./routes/itemRoutes')
 const adminRoutes = require('./routes/adminRoutes')
@@ -19,6 +22,7 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use(cookieParser())
+app.use(ipBlockerMiddleware)
 app.use(originAuth)
 
 app.get('/', (req, res) => {
